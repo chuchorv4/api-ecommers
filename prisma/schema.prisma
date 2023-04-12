@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  PENDING
+  SHIPPED
+  CANCELED
+  DELIVERED
+}
+
+model Product {
+  id            Int               @id @default(autoincrement())
+  name          String
+  description   String
+  image         String
+  base_price    Float
+  defaultPscId  Int?
+  category      Category          @relation(fields: [categoryId], references: [id])
+  categoryId    Int
+  psc           ProductSizeColor[]
+}
+
+model Category {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String?
+  products    Product[]
+}
+
+model Size {
+  id     Int       @id @default(autoincrement())
+  name   String
+  psc    ProductSizeColor[]
+}
+
+model Color {
+  id     Int       @id @default(autoincrement())
+  name   String
+  psc    ProductSizeColor[]
+}
+
+model ProductSizeColor {
+  id          Int      @id @default(autoincrement())
+  priceFactor Float    @default(1.0)
+  product     Product  @relation(fields: [productId], references: [id])
+  productId   Int
+  size        Size     @relation(fields: [sizeId], references: [id])
+  sizeId      Int
+  color       Color    @relation(fields: [colorId], references: [id])
+  colorId     Int
+  buys        Buy[]
+}
+
+model Cart {
+  id          Int               @id @default(autoincrement())
+  totalPrice  Float             @default(0.0)
+  buys        Buy[]
+  order       Order?
+}
+
+model Buy {
+  id          Int               @id @default(autoincrement())
+  quantity    Int
+  price       Float
+  psc         ProductSizeColor  @relation(fields: [pscId], references: [id])
+  pscId       Int
+  cart        Cart              @relation(fields: [cartId], references: [id])
+  cartId      Int
+}
+
+model Order {
+  id          Int               @id @default(autoincrement())
+  orderDate   DateTime          @default(now())
+  totalPrice  Float
+  status      OrderStatus       @default(PENDING)
+  cart        Cart              @relation(fields: [cartId], references: [id])
+  cartId      Int               @unique
+  client      Client            @relation(fields: [clientId], references: [id])
+  clientId    Int
+}
+
+model Client {
+  id          Int               @id @default(autoincrement())
+  email       String
+  number      String
+  bill        String
+  orders      Order[]
+}

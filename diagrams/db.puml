@@ -1,0 +1,85 @@
+@startuml
+' hide the spot
+hide circle
+
+' avoid problems with angled crows feet
+skinparam linetype ortho
+
+entity "Product" as p {
+  *product_id : int <<generated>>
+  --
+  *name : string
+  *description : string
+  *image : string
+  *category_id : int <<FK>>
+  *base_price : decimal
+  default_psc_id : int <<FK>> -- default Product_Size_Color ID for this product
+}
+
+entity "Category" as c {
+  *category_id : int <<generated>>
+  --
+  *name : string
+  description : string
+}
+
+entity "Size" as s {
+  *size_id : int <<generated>>
+  --
+  *name : string
+}
+
+entity "Color" as col {
+  *color_id : int <<generated>>
+  --
+  *name : string
+}
+
+entity "Product_Size_Color" as psc {
+  *psc_id : int <<generated>>
+  *product_id : int <<FK>>
+  *size_id : int <<FK>>
+  *color_id : int <<FK>>
+  price_factor : decimal = 1.0
+}
+
+entity "Cart" as cart {
+  *cart_id : int <<generated>>
+  total_price : decimal = 0.0
+}
+
+entity "Buy" as b {
+  *buy_id : int <<generated>>
+  *cart_id : int <<FK>>
+  *psc_id : int <<FK>>
+  *quantity : int
+  price : decimal
+}
+
+entity "Order" as o {
+  *order_id : int <<generated>>
+  *cart_id : int <<FK>>
+  *client_id : int <<FK>>
+  order_date : datetime
+  total_price : decimal
+  status : string
+}
+
+entity "Client" as cl {
+  *client_id : int <<generated>>
+  *email : string
+  number : string
+  bill : string
+}
+
+p ||..o{ c
+p ||..o{ s
+p ||..o{ col
+p }o..|| psc
+s }o..|| psc
+col }o..|| psc
+cart }o--|| b
+psc }o--|| b
+cart }o--|| o
+cl }o--|| o
+@enduml
